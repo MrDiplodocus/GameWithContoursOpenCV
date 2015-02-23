@@ -1,0 +1,298 @@
+#include <cv.h>
+#include <highgui.h>
+#include <opencv2\imgproc\imgproc.hpp>
+#include <stdlib.h>
+#include <stdio.h>
+#include <cstring>
+#include <vector>
+#include "Needing.h"
+
+using namespace cv;
+//using namespace std;
+//структура данных для изображения
+struct Img {
+	IplImage *image;
+	char *name;
+};
+typedef std::pair <IplImage*, std::vector <CvPoint* > > ImgAndCont;
+
+/*struct ImgAndCont {
+	IplImage *image;
+	std::vector <CvPoint> vectContPoint;
+};*/
+
+//изображения
+IplImage* image = 0;
+
+/*
+IplImage* gray = 0;
+IplImage* dst = 0;
+IplImage* dst1 = 0;
+IplImage* dst2 = 0;
+IplImage* res = 0;
+IplImage* bin = 0;
+IplImage* test = 0;
+*/
+
+//вектор изображений
+std::vector <Img> vectImage;
+
+//количество нажатий на левую кнопку мыши
+int cntLBtnClick = 0;
+CvPoint p1, p2;
+
+CvSeq* createCont(IplImage *image)
+{
+    IplImage *gray = cvCreateImage( cvGetSize(image), IPL_DEPTH_8U, 1 );
+	//res = cvCreateImage( cvGetSize(image), IPL_DEPTH_8U, 1 );
+	IplImage *dst1 = cvCreateImage( cvGetSize(image), IPL_DEPTH_8U, 1 );
+
+    cvCvtColor(image, gray, CV_RGB2GRAY);
+
+	IplImage *dst = kuwahara_grey(gray, 4);
+
+	cvInRangeS(dst, cvScalar(0), cvScalar(120), dst1);
+	//cvCanny(dst1, dst1, 10, 100, 3);
+	CvMemStorage* storage = cvCreateMemStorage(0);
+    CvSeq* contours=0;
+    int contoursCont = cvFindContours( dst1, storage,&contours,sizeof(CvContour),CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
+	CvSeq* contLow = cvApproxPoly(contours, sizeof(CvContour), storage, CV_POLY_APPROX_DP, 4, 1);
+
+	cvReleaseImage(&gray);
+	cvReleaseImage(&dst1);
+	cvReleaseImage(&dst);
+
+	return contLow;
+}
+
+/*IplImage**/ ImgAndCont drawLowCont(IplImage *image)
+{
+	ImgAndCont res;
+	res.first = 0;
+	//IplImage *res = 0;
+	res.first = cvCloneImage(image);
+	CvSeq *contLow = createCont(image);
+	for(CvSeq* seq0 = contLow; seq0!=0; seq0 = seq0->h_next){
+            cvDrawContours(res.first, seq0, CV_RGB(250,0,0), CV_RGB(0,0,250), 0, 2, 8); // рисуем контур
+    }
+	//обход всех элементов последовательности точек
+	for (int i = 0; i < (int)contLow->total; ++i)
+		res.second.push_back((CvPoint*)cvGetSeqElem(contLow, i));
+	return res;
+}
+
+void myMouseCallback(int event, int x, int y, int flags, void *param)
+{
+	IplImage *img = (IplImage*)param;
+	switch (event) {
+		case CV_EVENT_MOUSEMOVE:
+			break;
+		case CV_EVENT_LBUTTONDOWN:
+
+			cntLBtnClick++;
+			if (cntLBtnClick == 1) {
+				p1.x = x, p1.y = y;
+			} else if (cntLBtnClick == 2) {
+				p2.x = x, p2.y = y;
+
+				Img tr;
+
+				char buffer[20];
+				tr.name = itoa((int)vectImage.size() + 1, buffer, 10);
+				//img = drawLowCont(img).first;
+				cvSetImageROI(img, cvRect(p1.x, p1.y, std::abs(p1.x - p2.x), std::abs(p1.y - p2.y)));
+				tr.image = cvCreateImage(cvGetSize(img), img->depth, img->nChannels);
+				cvCopy(img, tr.image, NULL);
+				cvResetImageROI(img);
+				tr.image = drawLowCont(tr.image).first;
+
+				vectImage.push_back(tr);
+				cvNamedWindow(tr.name,CV_WINDOW_AUTOSIZE);
+				cvShowImage(tr.name, tr.image);
+
+			   	cntLBtnClick = 0;
+			}
+
+			break;
+		case CV_EVENT_LBUTTONUP:
+			break;
+	}
+}
+
+IplImage* kuwahara_grey(IplImage* img,int kernel_size)
+{
+	int nchannels= img->nChannels;
+	int w=img->width;
+	int h=img->height;
+	IplImage* out= cvCreateImage(cvSize(w,h),IPL_DEPTH_8U,nchannels);
+
+	int dt=kernel_size/2;
+
+	//TODO: расширить изображение-убрать черные края.
+
+	if(nchannels==1)  //только для одноканальных
+	{
+		for( int y=2*dt; y <h-2*dt ; ++y )
+		{
+			uchar* ptr = (uchar*) (img->imageData + y*img->widthStep);
+			uchar* p_out = (uchar*) (out->imageData + y*out->widthStep);
+			for( int x=2*dt; x <w-2*dt; ++x )
+			{
+				 int gr=0;
+				 int sum=0;
+				 double mean1=0;
+				 double mean2=0;
+				 double mean3=0;
+				 double mean4=0;
+				 double disp1=0;
+				 double disp2=0;
+				 double disp3=0;
+				 double disp4=0;
+
+				 int k=0;
+				 //1
+				 sum=0;
+				 mean1=0;
+				 uchar* pd=ptr;
+				 for (int k1=0;k1<=dt;++k1)
+				 {
+					for(int k2=-dt;k2<=0;++k2)
+					{
+						sum+=pd[x+k2];
+						++k;
+					}
+					pd+= img->widthStep;
+				 }
+				 mean1=sum/((dt+1)*(dt+1));
+
+				 pd=ptr;
+				 disp1=0;
+				 for (int k1=0;k1<=dt;++k1)
+				 {
+					for(int k2=-dt;k2<=0;++k2)
+					{
+						disp1+=(pd[x+k2]-mean1)*(pd[x+k2]-mean1);
+					}
+					pd+= img->widthStep;
+				 }
+
+				 //2
+				 sum=0;
+				 mean2=0;
+				 pd=ptr+dt*img->widthStep;
+				 for (int k1=0;k1<=dt;++k1)
+				 {
+					for(int k2=-dt;k2<=0;++k2)
+					{
+						sum+=pd[x+k2];
+					}
+					pd+= img->widthStep;
+				 }
+				 mean2=sum/((dt+1)*(dt+1));
+
+				 pd=ptr+dt*img->widthStep;
+				 disp2=0;
+				 for (int k1=0;k	1<=dt;++k1)
+				 {
+					for(int k2=-dt;k2<=0;++k2)
+					{
+						disp2+=(pd[x+k2]-mean2)*(pd[x+k2]-mean2);
+					}
+					pd+= img->widthStep;
+				 }
+
+				 //3
+				 sum=0;
+				 mean3=0;
+				 pd=ptr;
+				 for (int k1=0;k1<=dt;++k1)
+				 {
+					for(int k2=0;k2<=dt;++k2)
+					{
+						sum+=pd[x+k2];
+					}
+					pd+= img->widthStep;
+				 }
+				 mean3=sum/((dt+1)*(dt+1));
+
+				 pd=ptr;
+				 disp3=0;
+				 for (int k1=0;k1<=dt;++k1)
+				 {
+					for(int k2=0;k2<=dt;++k2)
+					{
+						disp3+=(pd[x+k2]-mean3)*(pd[x+k2]-mean3);
+					}
+					pd+= img->widthStep;
+				 }
+
+				 //4
+				 sum=0;
+				 mean4=0;
+				 pd=ptr+dt*img->widthStep;
+				 for (int k1=0;k1<=dt;++k1)
+				 {
+					for(int k2=0;k2<=dt;++k2)
+					{
+						sum+=pd[x+k2];
+					}
+					pd+= img->widthStep;
+				 }
+				 mean4=sum/((dt+1)*(dt+1));
+
+				 pd=ptr+dt*img->widthStep;
+				 disp4=0;
+				 for (int k1=0;k1<=dt;++k1)
+				 {
+					for(int k2=0;k2<=dt;++k2)
+					{
+						disp4+=(pd[x+k2]-mean4)*(pd[x+k2]-mean4);
+					}
+					pd+= img->widthStep;
+				 }
+
+				gr=0;
+				if((disp1<=disp2)&&(disp1<=disp3)&&(disp1<=disp4))
+					gr=mean1;
+				if((disp2<=disp1)&&(disp2<=disp3)&&(disp2<=disp4))
+					gr=mean2;
+				if((disp3<=disp1)&&(disp3<=disp2)&&(disp3<=disp4))
+					gr=mean3;
+				if((disp4<=disp1)&&(disp4<=disp2)&&(disp4<=disp3))
+					gr=mean4;
+
+				p_out[x]= gr;
+			}
+		}
+	}
+	return out;
+}
+
+int main(int argc, char* argv[])
+{
+    // имя картинки задаётся первым параметром
+    char* filename = argc >= 2 ? argv[1] : "D:\\image1.jpg";
+    // получаем картинку
+    image = cvLoadImage(filename,1);
+
+    printf("[i] image: %s\n", filename);
+    assert( image != 0 );
+
+	cvNamedWindow("original",CV_WINDOW_AUTOSIZE);
+
+	//image = drawLowCont(image);
+
+	cvShowImage("original", image);
+
+	cvSetMouseCallback("original", myMouseCallback, (void*)image);
+
+	cvWaitKey(0);
+
+	cvReleaseImage(&image);
+
+	for (int i = 0; i < (int)vectImage.size(); ++i)
+		cvReleaseImage(&vectImage[i].image);
+    // удаляем окна
+    cvDestroyAllWindows();
+    return 0;
+}
