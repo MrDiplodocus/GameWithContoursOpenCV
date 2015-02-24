@@ -1,14 +1,18 @@
 #!/usr/bin/python
 # -*- coding: utf_8 -*-
+from cv2 import drawContours
 
 import numpy as np
 import cv
 import cv2
 from PyQt4 import QtCore, QtGui
+from some_methods import *
 import filters
-import ui_mainwindow
+import ui_mainwindow1
 
-class MyWindow(QtGui.QMainWindow, ui_mainwindow.Ui_MainWindow):
+
+
+class MyWindow(QtGui.QMainWindow, ui_mainwindow1.Ui_MainWindow):
     pathOriginalFile = ''
     imageContours = ''
     def __init__(self, parent = None):
@@ -16,7 +20,7 @@ class MyWindow(QtGui.QMainWindow, ui_mainwindow.Ui_MainWindow):
         self.setupUi(self)
         self.pShowOriginal.clicked.connect(self.showOriginalImage)
         self.actionOpen.triggered.connect(self.showDialog)
-        self.chCanny.clicked.connect(self.enableCanny)
+        #self.chCanny.clicked.connect(self.enableCanny)
         self.checkBox.clicked.connect(self.enableApprox)
         self.radioButton.clicked.connect(self.enableKuwahara)
         self.radioButton_2.clicked.connect(self.enableGaussian)
@@ -24,6 +28,8 @@ class MyWindow(QtGui.QMainWindow, ui_mainwindow.Ui_MainWindow):
         self.radioButton_4.clicked.connect(self.enableBilateral)
         self.horizontalSlider.valueChanged.connect(self.drawContours)
         self.horizontalSlider_2.valueChanged.connect(self.drawContours)
+        self.comboBox.activated.connect(self.drawContours)
+        self.comboBox_2.activated.connect(self.drawContours)
 
     def showOriginalImage(self):
         img = cv2.imread(self.pathOriginalFile, 1)
@@ -43,13 +49,13 @@ class MyWindow(QtGui.QMainWindow, ui_mainwindow.Ui_MainWindow):
         # scene.addPixmap(filename)
         # self.graphicsView.setScene(scene)
         # self.graphicsView.show()
-
+    """
     def enableCanny(self):
         self.horizontalSlider_3.setEnabled(self.chCanny.isChecked())
         self.horizontalSlider_4.setEnabled(self.chCanny.isChecked())
         self.horizontalSlider_5.setEnabled(self.chCanny.isChecked())
         self.chL2Gradient.setEnabled(self.chCanny.isChecked())
-
+    """
     def enableKuwahara(self):
         self.horizontalSlider_6.setEnabled(True)
         self.horizontalSlider_7.setEnabled(False)
@@ -90,7 +96,44 @@ class MyWindow(QtGui.QMainWindow, ui_mainwindow.Ui_MainWindow):
         gray = cv2.cvtColor(self.imageContours, cv2.COLOR_BGR2GRAY)
         #edges = cv2.Canny(gray, self.horizontalSlider.value(), self.horizontalSlider_2.value())
         ret, thresh = cv2.threshold(gray, self.horizontalSlider.value(), self.horizontalSlider_2.value(), 0)
-        contours, hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+
+        x1 = self.comboBox.currentIndex()
+        x2 = self.comboBox_2.currentIndex()
+
+        c1 = 0
+        c2 = 0
+
+        while switch(x1):
+            if case(0):
+                c1 = cv2.RETR_EXTERNAL
+                break
+            if case(1):
+                c1 = cv2.RETR_LIST
+                break
+            if case(2):
+                c1 = cv2.RETR_CCOMP
+                break
+            if case(3):
+                c1 = cv2.RETR_TREE
+                break
+            break
+
+        while switch(x2):
+            if case(0):
+                c2 = cv2.CHAIN_APPROX_NONE
+                break
+            if case(1):
+                c2 = cv2.CHAIN_APPROX_SIMPLE
+                break
+            if case(2):
+                c2 = cv2.CHAIN_APPROX_TC89_L1
+                break
+            if case(3):
+                c2 = cv2.CHAIN_APPROX_TC89_KCOS
+                break
+            break
+
+        contours, hierarchy = cv2.findContours(thresh,c1,c2)
         cv2.drawContours(self.imageContours, contours, -1, (0,0,255), 2)
         cv2.imshow("Contours", self.imageContours)
         cv2.waitKey(0)
