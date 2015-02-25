@@ -6,13 +6,13 @@ import numpy as np
 import cv
 import cv2
 from PyQt4 import QtCore, QtGui
-from some_methods import *
+from special_methods import *
 import filters
-import ui_mainwindow1
+import ui_form
 
 
 
-class MyWindow(QtGui.QMainWindow, ui_mainwindow1.Ui_MainWindow):
+class MyWindow(QtGui.QMainWindow, ui_form.Ui_MainWindow):
     pathOriginalFile = ''
     imageContours = ''
     def __init__(self, parent = None):
@@ -58,26 +58,6 @@ class MyWindow(QtGui.QMainWindow, ui_mainwindow1.Ui_MainWindow):
         cv2.imshow("Contours", self.imageContours)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
-        # scene = QtGui.QGraphicsScene()
-        # scene.addPixmap(filename)
-        # self.graphicsView.setScene(scene)
-        # self.graphicsView.show()
-    """
-    def enableCanny(self):
-        self.horizontalSlider_3.setEnabled(self.chCanny.isChecked())
-        self.horizontalSlider_4.setEnabled(self.chCanny.isChecked())
-        self.horizontalSlider_5.setEnabled(self.chCanny.isChecked())
-        self.chL2Gradient.setEnabled(self.chCanny.isChecked())
-    """
-    """
-    def enableKuwahara(self):
-        self.horizontalSlider_6.setEnabled(True)
-        self.horizontalSlider_7.setEnabled(False)
-        self.horizontalSlider_8.setEnabled(False)
-        self.horizontalSlider_9.setEnabled(False)
-        self.horizontalSlider_10.setEnabled(False)
-        self.horizontalSlider_11.setEnabled(False)
-    """
 
     def enableGaussian(self):
         self.horizontalSlider_6.setEnabled(True)
