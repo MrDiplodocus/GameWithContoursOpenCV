@@ -22,7 +22,7 @@ class MyWindow(QtGui.QMainWindow, ui_mainwindow1.Ui_MainWindow):
         self.actionOpen.triggered.connect(self.showDialog)
         #self.chCanny.clicked.connect(self.enableCanny)
         self.checkBox.clicked.connect(self.enableApprox)
-        self.radioButton.clicked.connect(self.enableKuwahara)
+        #self.radioButton.clicked.connect(self.enableKuwahara)
         self.radioButton_2.clicked.connect(self.enableGaussian)
         self.radioButton_3.clicked.connect(self.enableMedian)
         self.radioButton_4.clicked.connect(self.enableBilateral)
@@ -30,6 +30,19 @@ class MyWindow(QtGui.QMainWindow, ui_mainwindow1.Ui_MainWindow):
         self.horizontalSlider_2.valueChanged.connect(self.drawContours)
         self.comboBox.activated.connect(self.drawContours)
         self.comboBox_2.activated.connect(self.drawContours)
+        self.checkBox.clicked.connect(self.drawContours)
+        self.doubleSpinBox.valueChanged.connect(self.drawContours)
+        self.checkBox_2.clicked.connect(self.drawContours)
+        self.radioButton_3.clicked.connect(self.drawContours)
+        self.horizontalSlider_6.valueChanged.connect(self.drawContours)
+        self.radioButton_2.clicked.connect(self.drawContours)
+        self.horizontalSlider_7.valueChanged.connect(self.drawContours)
+        self.horizontalSlider_8.valueChanged.connect(self.drawContours)
+        self.radioButton_4.clicked.connect(self.drawContours)
+        self.horizontalSlider_9.valueChanged.connect(self.drawContours)
+        self.horizontalSlider_10.valueChanged.connect(self.drawContours)
+        self.horizontalSlider_11.valueChanged.connect(self.drawContours)
+
 
     def showOriginalImage(self):
         img = cv2.imread(self.pathOriginalFile, 1)
@@ -56,6 +69,7 @@ class MyWindow(QtGui.QMainWindow, ui_mainwindow1.Ui_MainWindow):
         self.horizontalSlider_5.setEnabled(self.chCanny.isChecked())
         self.chL2Gradient.setEnabled(self.chCanny.isChecked())
     """
+    """
     def enableKuwahara(self):
         self.horizontalSlider_6.setEnabled(True)
         self.horizontalSlider_7.setEnabled(False)
@@ -63,6 +77,7 @@ class MyWindow(QtGui.QMainWindow, ui_mainwindow1.Ui_MainWindow):
         self.horizontalSlider_9.setEnabled(False)
         self.horizontalSlider_10.setEnabled(False)
         self.horizontalSlider_11.setEnabled(False)
+    """
 
     def enableGaussian(self):
         self.horizontalSlider_6.setEnabled(True)
@@ -90,10 +105,19 @@ class MyWindow(QtGui.QMainWindow, ui_mainwindow1.Ui_MainWindow):
 
     def enableApprox(self):
         self.doubleSpinBox.setEnabled(self.checkBox.isChecked())
+        self.checkBox_2.setEnabled(self.checkBox.isChecked())
 
     def drawContours(self):
         self.imageContours = cv2.imread(self.pathOriginalFile, 1)
         gray = cv2.cvtColor(self.imageContours, cv2.COLOR_BGR2GRAY)
+
+        if self.radioButton_3.isChecked():
+            gray = filters.Median(gray, self.horizontalSlider_6.value())
+        elif self.radioButton_2.isChecked():
+            gray = filters.Gaussian(gray, (self.horizontalSlider_6.value(), self.horizontalSlider_6.value()), self.horizontalSlider_7.value(), self.horizontalSlider_8.value())
+        elif self.radioButton_4.isChecked():
+            gray = filters.bilFilter(gray, self.horizontalSlider_9.value(), self.horizontalSlider_10.value(), self.horizontalSlider_11.value())
+
         #edges = cv2.Canny(gray, self.horizontalSlider.value(), self.horizontalSlider_2.value())
         ret, thresh = cv2.threshold(gray, self.horizontalSlider.value(), self.horizontalSlider_2.value(), 0)
 
@@ -134,6 +158,9 @@ class MyWindow(QtGui.QMainWindow, ui_mainwindow1.Ui_MainWindow):
             break
 
         contours, hierarchy = cv2.findContours(thresh,c1,c2)
+        if self.checkBox.isChecked():
+            for i in range(0, len(contours)):
+                contours[i] = cv2.approxPolyDP(contours[i], self.doubleSpinBox.value(), self.checkBox_2.isChecked())
         cv2.drawContours(self.imageContours, contours, -1, (0,0,255), 2)
         cv2.imshow("Contours", self.imageContours)
         cv2.waitKey(0)

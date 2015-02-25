@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>542</width>
-    <height>469</height>
+    <height>400</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,10 +17,10 @@
    <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>2</y>
+      <x>0</x>
+      <y>4</y>
       <width>531</width>
-      <height>441</height>
+      <height>371</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -31,35 +31,6 @@
          <property name="text">
           <string>Показать оригинал</string>
          </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="groupBox_2">
-         <property name="title">
-          <string>Режим</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout">
-          <item>
-           <widget class="QRadioButton" name="rAuto">
-            <property name="text">
-             <string>Автоматический</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="rManual">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="text">
-             <string>Выделение областей</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
         </widget>
        </item>
        <item>
@@ -206,29 +177,43 @@
          <property name="title">
           <string>Аппроксимация</string>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_10">
-          <item>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="0" column="0">
            <widget class="QCheckBox" name="checkBox">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="text">
              <string>Вкл./выкл.</string>
             </property>
             <property name="checked">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
            </widget>
           </item>
-          <item>
-           <widget class="QDoubleSpinBox" name="doubleSpinBox">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="value">
-             <double>0.500000000000000</double>
-            </property>
-           </widget>
+          <item row="1" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_6">
+            <item>
+             <widget class="QDoubleSpinBox" name="doubleSpinBox">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="value">
+               <double>0.500000000000000</double>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="checkBox_2">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Замкнутость</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </widget>
@@ -253,19 +238,12 @@
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_11">
            <item>
-            <widget class="QRadioButton" name="radioButton">
-             <property name="text">
-              <string>Кувахара</string>
-             </property>
-            </widget>
-           </item>
-           <item>
             <widget class="QRadioButton" name="radioButton_2">
              <property name="text">
               <string>Гаусс</string>
              </property>
              <property name="checkable">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <property name="checked">
               <bool>false</bool>
@@ -324,8 +302,11 @@
               <layout class="QVBoxLayout" name="verticalLayout_14">
                <item>
                 <widget class="QSlider" name="horizontalSlider_6">
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
                  <property name="maximum">
-                  <number>25</number>
+                  <number>30</number>
                  </property>
                  <property name="value">
                   <number>5</number>
@@ -394,7 +375,7 @@
                   <bool>false</bool>
                  </property>
                  <property name="maximum">
-                  <number>12</number>
+                  <number>25</number>
                  </property>
                  <property name="value">
                   <number>9</number>
@@ -410,7 +391,7 @@
                   <bool>false</bool>
                  </property>
                  <property name="maximum">
-                  <number>100</number>
+                  <number>200</number>
                  </property>
                  <property name="value">
                   <number>75</number>
@@ -426,7 +407,7 @@
                   <bool>false</bool>
                  </property>
                  <property name="maximum">
-                  <number>100</number>
+                  <number>200</number>
                  </property>
                  <property name="value">
                   <number>75</number>
@@ -463,7 +444,6 @@
      <string>File</string>
     </property>
     <addaction name="actionOpen"/>
-    <addaction name="actionSave"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
